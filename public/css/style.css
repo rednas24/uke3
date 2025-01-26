@@ -1,0 +1,24 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+#card-display {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 200px;
+    text-align: center;
+}
+button {
+    margin: 5px;
+    padding: 10px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
