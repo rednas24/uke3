@@ -1,7 +1,7 @@
 // routes/machineRoutes.mjs
 import express from 'express';
-import Machine from '../models/Machine.mjs';
-import BorrowedMachine from '../models/BorrowedMachine.mjs';
+import Machine from '../models/machine.mjs';
+import BorrowedMachine from '../models/borrowedMachine.mjs';
 import HTTP_CODES from '../utils/httpCodes.mjs';
 
 const router = express.Router();
@@ -118,7 +118,6 @@ router.post('/:machineId/status', async (req, res) => {
             return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST).json({ error: 'Invalid data or missing fields' });
         }
 
-        // Create new borrowed machine record
         const newStatus = await BorrowedMachine.createOrUpdateStatus(machineId, borrower_name, return_date, comments);
         res.status(HTTP_CODES.SUCCESS.CREATED).json({ message: 'Machine status created successfully', details: newStatus });
     } catch (error) {
