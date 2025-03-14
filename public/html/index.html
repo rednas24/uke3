@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo</title>
+    <link href="./css/style.css" rel="stylesheet">
+    <script type="module" src="./scripts/home.mjs"></script>
+    <link rel="manifest" href="./manifest.webmanifest">
+
+</head>
+
+<body>
+
+    <h2>Maskin Liste:</h2>
+    <!-- list of machines here-->
+    <ul id="machines-list"></ul>
+
+    <h1>Legg til flere maskiner</h1>
+    <form id="machine-form">
+        <label for="serial_number">SNr:</label>
+        <input type="text" id="serial_number" name="serial_number" required><br>
+
+        <label for="machine_name">Navn på maskin:</label>
+        <input type="text" id="machine_name" name="machine_name" required><br>
+
+        <label for="brand">Merke på maskin:</label>
+        <input type="text" id="brand" name="brand" required><br>
+
+        <label for="model">Type maskin:</label>
+        <select id="model" name="model" required>
+        <option value="motorsag">Motorsag</option>
+        <option value="høytrykkspyler">Høytrykkspyler</option>
+        <option value="gressklipper">Gressklipper</option>
+        <option value="annet">Annet</option>
+        </select><br>
+
+        <button type="submit">OK</button>
+    </form>
+
+    <div id="response"></div>
+
+    <div id="status-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Status</h2>
+            <form id="status-form">
+                <label for="borrower_name">Navn på kunde:</label>
+                <input type="text" id="borrower_name" name="Navn" required><br>
+    
+                <label for="return_date">Cirka retur dato:</label>
+                <input type="date" id="return_date" name="Retur dato" required><br>
+
+                <textarea id="comments" placeholder="Mulige kommentarer som er nyttige"></textarea>
+
+                <button type="submit">Oppdater status</button>
+                <button type="button" id="close-modal">Lukk</button>
+                <button type="button" id="clear-status">Clear</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered!', reg))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,11 +1,17 @@
-const CACHE_NAME = 'Machine lending'; // Updated cache version
+const CACHE_NAME = 'Machine-lending';
 const ASSETS_TO_CACHE = [
     '/',
-    '/index.html',
+    '/html/index.html',
+    '/html/login.html',
+    '/html/register.html',
     '/css/style.css',
+    '/css/register.css',
+    '/css/login.css',
     '/manifest.webmanifest',
     '/service-worker.js',
-    '/home.mjs', // ✅ Added to cache
+    '/scripts/home.mjs',
+    '/scripts/login.mjs',
+    '/scripts/register.mjs',
     '/icons/android-launchericon-192-192.png',
     '/icons/android-launchericon-512-512.png'
 ];
@@ -23,13 +29,12 @@ self.addEventListener('install', (event) => {
             }
         })
     );
-    self.skipWaiting(); // ✅ Forces the SW to take control immediately
+    self.skipWaiting(); 
 });
 
-// Fetch event - serve cached assets but always fetch JS/MJS files from network
+// Fetch event - serve cached assets
 self.addEventListener('fetch', (event) => {
-    if (!event.request.url.startsWith('http')) return; // Ignore non-HTTP(S) requests
-
+    if (!event.request.url.startsWith('http')) return; 
     if (event.request.url.endsWith('.js') || event.request.url.endsWith('.mjs')) {
         console.log(`[Service Worker] Network-first for JS/MJS: ${event.request.url}`);
         event.respondWith(
@@ -40,6 +45,26 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Handle API calls (dynamic content)
+    if (event.request.url.includes('/api/machines/')) {
+        console.log(`[Service Worker] Network-first for API call: ${event.request.url}`);
+
+        event.respondWith(
+            fetch(event.request)
+                .then(response => {
+                    // Updatetes cahce wwith new api calls
+                    const cacheClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, cacheClone);
+                    });
+                    return response;
+                })
+                .catch(() => caches.match(event.request)) // Serve from cache if offline
+        );
+        return;
+    }
+
+    // Default behavior - Cache-first strategy for most resources
     event.respondWith((async () => {
         const cachedResponse = await caches.match(event.request);
         if (cachedResponse) {
@@ -66,9 +91,9 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
-                keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+                keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)) // Delete old caches
             );
         })
     );
-    self.clients.claim(); // ✅ Forces the SW to take control immediately
+    self.clients.claim(); // Forces the SW to take control immediately, not sure what means
 });

@@ -3,10 +3,10 @@ import session from 'express-session';
 import FileStore from 'session-file-store';
 import log from './modules/log.mjs';
 import machinesRouter from './route/machineRoute.mjs';
+import authRouter from './route/authRoute.mjs';
 import HTTP_CODES from './utils/httpCodes.mjs';
-import pool from './db.mjs'; // Import the pool correctly
 import 'dotenv/config';
-import path from 'path'; // Ensure path module is imported
+import path from 'path';
 import { fileURLToPath } from 'url';
 
 const FileStoreInstance = FileStore(session);
@@ -15,7 +15,7 @@ const port = process.env.PORT || 8000;
 
 server.set('port', port);
 server.use(log());
-server.use(express.static('public'));
+server.use(express.static('public', { index: false }));
 server.use(express.json());
 
 // Session middleware setup
@@ -27,20 +27,22 @@ server.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 
-// Corrected handling of __dirname for ES modules
+// Helper function to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+    // Check if there's a valid session token
+    if (!req.session.token) {
+        return res.redirect('/'); // Redirect to login page if no token found
+    }
+    next();
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Print __dirname to debug
-console.log('__dirname:', __dirname);
 
-server.get('/home', (req, res) => {
-    // Use path.join to construct the correct path
-    let indexPath = path.join(__dirname, 'public', 'index.html');
+server.get('/', (req, res) => {
+    let indexPath = path.join(__dirname, 'public', '/html/login.html');
 
-    console.log('Resolved absolute path:', indexPath); // Debugging output
-
-    // Normalize the path to remove redundant slashes or drive letters
     indexPath = path.normalize(indexPath);
 
     res.sendFile(indexPath, (err) => {
@@ -51,8 +53,18 @@ server.get('/home', (req, res) => {
     });
 });
 
+// Protect the /home must check for token first
+server.get('/home', isAuthenticated, (req, res) => {
+    res.sendFile(__dirname + '/public/html/index.html');
+});
+
+server.get('/register', (req, res) => {
+    res.sendFile(__dirname + '/public/html/register.html');
+});
+
 // API routes
-server.use('/api', machinesRouter);
+server.use('/api/machines', machinesRouter);
+server.use('/api/auth', authRouter);
 
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
