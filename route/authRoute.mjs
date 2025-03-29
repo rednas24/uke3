@@ -30,22 +30,19 @@ router.post('/register', async (req, res) => {
 });
 
 
+//User Login
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Check if username and password are provided
         if (!username || !password) {
             return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST).json({ error: 'Username and password are required' });
         }
 
-        // Find the user by username
         const user = await User.findByUsername(username);
         if (!user) {
             return res.status(HTTP_CODES.CLIENT_ERROR.UNAUTHORIZED).json({ error: 'Invalid credentials' });
         }
-
-        // Check if the password is valid
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(HTTP_CODES.CLIENT_ERROR.UNAUTHORIZED).json({ error: 'Invalid credentials' });
@@ -57,7 +54,6 @@ router.post('/login', async (req, res) => {
         // Store the token in the session
         req.session.token = token;
 
-        // Send the token in the response (optional, depending on your front-end logic)
         res.status(HTTP_CODES.SUCCESS.OK).json({ message: 'Login successful', token });
 
     } catch (err) {
@@ -68,12 +64,11 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', (req, res) => {
     try {
-        // Destroy the session, effectively logging out the user
+        // Destroy the session
         req.session.destroy((err) => {
             if (err) {
                 return res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR).json({ error: 'Failed to log out' });
             }
-            // Send a success message after the session is destroyed
             res.status(HTTP_CODES.SUCCESS.OK).json({ message: 'Logout successful' });
         });
     } catch (err) {
